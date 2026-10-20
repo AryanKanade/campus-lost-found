@@ -24,6 +24,66 @@ const allowedCategories = [
     "Other"
 ];
 
+
+function isValidEmail(email) {
+    if (!email || email.length > 254 || /\s/.test(email)) {
+        return false;
+    }
+
+    const parts = email.split("@");
+
+    if (parts.length !== 2) {
+        return false;
+    }
+
+    const [local, domain] = parts;
+
+    // Validate the part before @
+    if (
+        !local ||
+        local.length > 64 ||
+        local.startsWith(".") ||
+        local.endsWith(".") ||
+        local.includes("..") ||
+        !/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+$/.test(local)
+    ) {
+        return false;
+    }
+
+    // Validate the domain
+    if (
+        !domain ||
+        domain.length > 253 ||
+        domain.startsWith(".") ||
+        domain.endsWith(".") ||
+        domain.includes("..")
+    ) {
+        return false;
+    }
+
+    const labels = domain.split(".");
+
+    if (labels.length < 2) {
+        return false;
+    }
+
+    // Reject empty labels, invalid characters and misplaced hyphens.
+    const validLabels = labels.every((label) =>
+        label.length <= 63 &&
+        /^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/.test(label)
+    );
+
+    if (!validLabels) {
+        return false;
+    }
+
+    // Require a conventional alphabetic top-level domain.
+    const tld = labels[labels.length - 1];
+
+    return /^[A-Za-z]{2,63}$/.test(tld);
+}
+
+
 function valueOf(name) {
     return String(reportForm.elements[name]?.value || "").trim();
 }
@@ -160,12 +220,8 @@ function validateContacts() {
         phoneError = "Enter an email address or phone number.";
     } else {
         if (email) {
-            if (email.length > 254) {
-                emailError = "Email must not exceed 254 characters.";
-            } else if (
-                !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)
-            ) {
-                emailError = "Enter a valid email, e.g. name@example.com.";
+            if (!isValidEmail(email)) {
+                emailError = "Enter a valid email address, e.g. name@example.com.";
             }
         }
 

@@ -42,6 +42,34 @@ app.get("/api/health", async (req, res) => {
 // Report endpoints
 app.use("/api/reports", reportRoutes);
 
+/* Centralized API error handler */
+app.use((err, req, res, next) => {
+    if (res.headersSent) {
+        return next(err);
+    }
+
+    // Handle malformed JSON sent to the API.
+    if (err.type === "entity.parse.failed") {
+        return res.status(400).json({
+            message: "Invalid JSON request body."
+        });
+    }
+
+    // Handle oversized request bodies.
+    if (err.type === "entity.too.large") {
+        return res.status(413).json({
+            message: "Request body is too large."
+        });
+    }
+
+    console.error("Unhandled request error:", err.message);
+
+    return res.status(500).json({
+        message: "An unexpected server error occurred."
+    });
+});
+
+
 // Start server after verifying database connection
 async function startServer() {
     try {
