@@ -12,38 +12,6 @@ TC-REP-09	Item Reporting / API	Send a JSON request body larger than 20 KB	HTTP 4
 TC-REP-10  HTTP 400; invalid email rejected and no record saved  HTTP 201; report ID 7 created  HTTP 400; invalid email rejected  Passed after fix
 
 
-## Defect Tracking and Retesting
-
-### Defect: Malformed JSON Error Handling
-
-**Description:**  
-The API returned an HTML error page containing a stack trace when it received malformed JSON instead of returning a consistent JSON error response.
-
-**Steps to Reproduce:**
-1. Start the Node.js and Express server.
-2. Send a POST request to `/api/reports`.
-3. Set the `Content-Type` header to `application/json`.
-4. Send the malformed request body `{invalid`.
-
-**Expected Result:**  
-The server returns HTTP 400 with a JSON error message and does not expose the stack trace in the response.
-
-**Initial Actual Result:**  
-The server returned HTTP 400 with an HTML error page containing a SyntaxError stack trace.
-
-**Root Cause:**  
-Malformed JSON errors from Express's JSON body parser were not handled by custom API error-handling middleware.
-
-**Fix Implemented:**  
-Added centralized Express error-handling middleware to return a JSON error message for malformed JSON requests and a suitable response for oversized request bodies.
-
-**Retest Result:**  
-After the fix, the malformed JSON request returned HTTP 400 with a JSON error response. The client response no longer contained an HTML error page or stack trace.
-
-**Final Status:** Passed after fix and retesting.
-
-**Linked Jira Bug:** [Replace with your actual Jira bug key]
-
 
 Module 2 — Browse & Search
 Test Case ID Test scenario and data Expected result Actual result Status
